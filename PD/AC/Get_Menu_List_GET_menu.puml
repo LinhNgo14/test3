@@ -1,0 +1,34 @@
+@startuml
+title Get Menu List — GET /menu
+
+start
+
+:Receive GET request at /menu;
+:Extract Authorization header;
+
+if (Is Authorization header present?) then (yes)
+  :Validate JWT token;
+  if (Is JWT token valid?) then (yes)
+    :Query database for menu items;
+    if (Database query successful?) then (yes)
+      :Format menu items into JSON response;
+      :Include fields: id, name, price, description, state, image_url;
+      :Return HTTP 200 with JSON response;
+      stop
+    else (no)
+      :Log database error;
+      :Return HTTP 500 with error message;
+      stop
+    endif
+  else (no)
+    :Log invalid token error;
+    :Return HTTP 401 Unauthorized;
+    stop
+  endif
+else (no)
+  :Log missing token error;
+  :Return HTTP 401 Unauthorized;
+  stop
+endif
+
+@enduml

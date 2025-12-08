@@ -1,0 +1,31 @@
+@startuml
+title User Login — POST /auth/login
+
+start
+:Receive POST request at /auth/login;
+:Extract 'email' and 'password' from request body;
+
+if (Are 'email' and 'password' valid?) then (Yes)
+  :Check if 'email' exists in the database;
+  if (Does 'email' exist?) then (Yes)
+    :Verify 'password' against stored hash;
+    if (Is 'password' correct?) then (Yes)
+      :Generate JWT token;
+      :Set token expiration (default: 86400 seconds);
+      :Retrieve user ID;
+      :Return HTTP 200 with token, expiration, and user ID;
+      stop
+    else (No)
+      :Return HTTP 401 Unauthorized;
+      stop
+    endif
+  else (No)
+    :Return HTTP 401 Unauthorized;
+    stop
+  endif
+else (No)
+  :Return HTTP 400 Bad Request;
+  stop
+endif
+
+@enduml

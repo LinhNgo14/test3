@@ -1,0 +1,24 @@
+@startuml
+title Sort Menu Items — GET /menu/sort
+
+start
+:Receive GET request at /menu/sort;
+:Extract query parameters: sort_by, order;
+
+if (Are query parameters valid?) then (Yes)
+  :Query parameters are valid;
+  :Fetch menu items from database;
+  if (Menu items found?) then (Yes)
+    :Sort menu items by 'sort_by' and 'order';
+    :Return HTTP 200 with sorted menu items in JSON format;
+    stop
+  else (No)
+    :Return HTTP 200 with empty list in JSON format;
+    stop
+  endif
+else (No)
+  :Return HTTP 400 with error message "MISSING_QUERY_PARAMETER";
+  stop
+endif
+
+@enduml

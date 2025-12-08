@@ -1,0 +1,23 @@
+@startuml
+title Create Menu Item — POST /menu
+
+start
+:Receive request with parameters: name, price, description, image, state;
+:Validate JWT token;
+
+if (Is JWT token valid?) then (Yes)
+  :Validate input parameters: name, price, description, image, state;
+  if (Are input parameters valid?) then (Yes)
+    :Save new menu item to database;
+    :Generate response with created menu item details;
+    stop
+  else (No)
+    :Return HTTP 400 Bad Request with error message "Invalid input data";
+    stop
+  endif
+else (No)
+  :Return HTTP 401 Unauthorized with error message "Invalid or missing token";
+  stop
+endif
+
+@enduml

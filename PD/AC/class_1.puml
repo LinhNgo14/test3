@@ -1,0 +1,349 @@
+@startuml
+title Class Diagram for API Backend System
+
+' Base Classes
+class DatabaseConnection {
+  - connection : psycopg2.Connection
+  - cursor : psycopg2.Cursor
+  - db_host : str
+  - db_port : int
+  - db_name : str
+  - db_user : str
+  - db_password : str
+  - logger : logging.Logger
+  + __init__()
+  + connect() : None
+  + execute_query(query: str, params: tuple) : list[dict]
+  + execute_update(query: str, params: tuple) : int
+  + close_connection() : None
+  + handle_error(error: Exception) : None
+}
+
+class Logger {
+  - logger : logging.Logger
+  - log_file_path : str
+  - log_level : str
+  - max_log_size : int
+  - backup_count : int
+  + __init__()
+  + log_info(message: str, extra: dict)
+  + log_warn(message: str, extra: dict)
+  + log_error(message: str, extra: dict)
+  + rotate_logs()
+}
+
+class ConfigurationManager {
+  - config_cache : dict
+  - config_file_path : str
+  - logger : logging.Logger
+  + __init__()
+  + get_config(key: str, default: Any) : Any
+  + load_config_file() : dict
+  + validate_config() : None
+  + clear_cache() : None
+}
+
+class JWTAuthenticator {
+  - secret_key : str
+  - algorithm : str
+  - token_ttl : int
+  - logger : logging.Logger
+  + __init__()
+  + generate_token(user_id: str, roles: list[str]) : str
+  + verify_token(token: str) : dict
+  + invalidate_token(token: str) : None
+  + decode_token(token: str) : dict
+}
+
+class PasswordHasher {
+  - salt_rounds : int
+  + __init__(salt_rounds: int)
+  + hash_password(password: str) : str
+  + verify_password(password: str, hashed_password: str) : bool
+}
+
+class Validator {
+  - logger : logging.Logger
+  - schemas : dict
+  + __init__()
+  + validate_schema(data: dict, schema_name: str) : bool
+  + validate_email(email: str) : bool
+  + validate_password(password: str) : bool
+  + validate_enum(value: str, allowed_values: list[str]) : bool
+}
+
+class ImageUploader {
+  - upload_dir : str
+  - max_file_size : int
+  - allowed_formats : list[str]
+  - logger : logging.Logger
+  + __init__()
+  + upload_image(file: bytes, filename: str) : str
+  + update_image(file: bytes, filename: str, existing_path: str) : str
+  + delete_image(file_path: str) : None
+  + validate_image(file: bytes, filename: str) : bool
+}
+
+class MenuItem {
+  - menu_item_id : int
+  - name : str
+  - price : Decimal
+  - description : str
+  - image_url : str
+  - status : str
+  - logger : logging.Logger
+  + __init__()
+  + create_menu_item(name: str, price: Decimal, description: str, image_url: str, status: str) : dict
+  + update_menu_item(menu_item_id: int, name: str, price: Decimal, description: str, image_url: str, status: str) : dict
+  + delete_menu_item(menu_item_id: int) : None
+  + get_menu_item(menu_item_id: int) : dict
+  + bulk_update_status(menu_item_ids: list[int], status: str) : list[int]
+}
+
+class User {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  - password_hasher : PasswordHasher
+  + __init__()
+  + create_user(name: str, email: str, password: str, roles: list[str]) : dict
+  + update_user(user_id: str, name: str, email: str, roles: list[str]) : dict
+  + delete_user(user_id: str) : None
+  + get_user(user_id: str) : dict
+  + validate_user_data(name: str, email: str, password: str, roles: list[str]) : bool
+}
+
+class Role {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  + __init__()
+  + create_role(name: str, permissions: list[str]) : dict
+  + update_role(role_id: int, name: str, permissions: list[str]) : dict
+  + delete_role(role_id: int) : None
+  + get_role(role_id: int) : dict
+  + get_all_roles() : list[dict]
+  + validate_role_data(name: str, permissions: list[str]) : bool
+}
+
+class Permission {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  + __init__()
+  + create_permission(name: str) : dict
+  + update_permission(permission_id: int, name: str) : dict
+  + delete_permission(permission_id: int) : None
+  + get_permission(permission_id: int) : dict
+  + get_all_permissions() : list[dict]
+  + validate_permission_data(name: str) : bool
+}
+
+class LogEntry {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  - log_table : str
+  + __init__()
+  + record_log(user_id: str, action: str, resource_id: str, ip_address: str) : None
+  + fetch_logs(user_id: str, action: str, start_date: datetime, end_date: datetime) : list[dict]
+  + delete_logs(older_than: datetime) : int
+}
+
+class MenuItemRepository {
+  - logger : logging.Logger
+  + create_menu_item(name: str, price: Decimal, description: str, image_url: str, status: str) : dict
+  + get_menu_item(menu_item_id: int) : dict
+  + get_all_menu_items() : list[dict]
+  + update_menu_item(menu_item_id: int, name: str, price: Decimal, description: str, image_url: str, status: str) : dict
+  + delete_menu_item(menu_item_id: int) : None
+  + search_menu_items(query: str) : list[dict]
+  + bulk_update_status(menu_item_ids: list[int], status: str) : list[int]
+}
+
+class UserRepository {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  + create_user(name: str, email: str, password_hash: str, roles: list[int]) : dict
+  + get_user(user_id: str) : dict
+  + get_all_users() : list[dict]
+  + update_user(user_id: str, name: str, email: str, roles: list[int]) : dict
+  + delete_user(user_id: str) : None
+  + search_users(query: str) : list[dict]
+}
+
+class RoleRepository {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  + create_role(name: str, permissions: list[int]) : dict
+  + get_role(role_id: int) : dict
+  + get_all_roles() : list[dict]
+  + update_role(role_id: int, name: str, permissions: list[int]) : dict
+  + delete_role(role_id: int) : None
+}
+
+class PermissionRepository {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  + create_permission(name: str) : dict
+  + get_permission(permission_id: int) : dict
+  + get_all_permissions() : list[dict]
+  + update_permission(permission_id: int, name: str) : dict
+  + delete_permission(permission_id: int) : None
+}
+
+class LogRepository {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  - log_table : str
+  + record_log(user_id: str, action: str, resource_id: str, ip_address: str) : None
+  + fetch_logs(user_id: str, action: str, start_date: datetime, end_date: datetime) : list[dict]
+  + delete_logs(older_than: datetime) : int
+}
+
+class MenuService {
+  - menu_item_repository : MenuItemRepository
+  - image_uploader : ImageUploader
+  - logger : logging.Logger
+  + create_menu_item(name: str, price: Decimal, description: str, image: bytes, state: str) : dict
+  + get_menu_item(menu_item_id: int) : dict
+  + get_all_menu_items() : list[dict]
+  + update_menu_item(menu_item_id: int, name: str, price: Decimal, description: str, image: bytes, state: str) : dict
+  + delete_menu_item(menu_item_id: int) : None
+  + bulk_update_status(menu_item_ids: list[int], state: str) : list[int]
+}
+
+class UserService {
+  - user_repository : UserRepository
+  - role_repository : RoleRepository
+  - logger : logging.Logger
+  + create_user(name: str, email: str, password: str, roles: list[str]) : dict
+  + get_user(user_id: str) : dict
+  + get_all_users() : list[dict]
+  + update_user(user_id: str, name: str, email: str, roles: list[str]) : dict
+  + delete_user(user_id: str) : None
+  + validate_user_data(name: str, email: str, password: str, roles: list[str]) : bool
+}
+
+class RoleService {
+  - role_repository : RoleRepository
+  - permission_repository : PermissionRepository
+  - logger : logging.Logger
+  + create_role(name: str, permissions: list[str]) : dict
+  + get_role(role_id: int) : dict
+  + get_all_roles() : list[dict]
+  + update_role(role_id: int, name: str, permissions: list[str]) : dict
+  + delete_role(role_id: int) : None
+}
+
+class PermissionService {
+  - permission_repository : PermissionRepository
+  - logger : logging.Logger
+  + create_permission(name: str) : dict
+  + get_permission(permission_id: int) : dict
+  + get_all_permissions() : list[dict]
+  + update_permission(permission_id: int, name: str) : dict
+  + delete_permission(permission_id: int) : None
+}
+
+class LogService {
+  - db_connection : DatabaseConnection
+  - logger : logging.Logger
+  - log_table : str
+  + record_log(user_id: str, action: str, resource_id: str, ip_address: str) : None
+  + fetch_logs(user_id: str, action: str, start_date: datetime, end_date: datetime) : list[dict]
+  + delete_logs(older_than: datetime) : int
+}
+
+class AuthService {
+  - user_repository : UserRepository
+  - password_hasher : PasswordHasher
+  - secret_key : str
+  - algorithm : str
+  - token_ttl : int
+  - logger : logging.Logger
+  + login_user(email: str, password: str) : dict
+  + verify_token(token: str) : dict
+  + invalidate_token(token: str) : None
+  + refresh_token(token: str) : dict
+}
+
+class MenuStateUpdater {
+  - menu_item_repository : MenuItemRepository
+  - log_service : LogService
+  - logger : logging.Logger
+  + update_menu_states(menu_item_ids: list[int], state: str, user_id: str) : dict
+}
+
+class SearchHandler {
+  - menu_item_repository : MenuItemRepository
+  - logger : logging.Logger
+  + search_menu_items(query: str) : dict
+}
+
+class SortHandler {
+  - menu_item_repository : MenuItemRepository
+  - logger : logging.Logger
+  + sort_menu_items(sort_by: str, order: str) : dict
+}
+
+class BulkStateUpdater {
+  - menu_item_repository : MenuItemRepository
+  - log_service : LogService
+  - logger : logging.Logger
+  + update_menu_states(menu_item_ids: list[int], state: str, user_id: str) : dict
+}
+
+class ImageHandler {
+  - upload_dir : str
+  - max_file_size : int
+  - allowed_formats : list[str]
+  - logger : logging.Logger
+  + upload_image(file: bytes, filename: str) : str
+  + update_image(file: bytes, filename: str, existing_path: str) : str
+  + delete_image(file_path: str) : None
+  + validate_image(file: bytes, filename: str) : bool
+}
+
+' Relationships
+DatabaseConnection <|-- MenuItemRepository
+DatabaseConnection <|-- UserRepository
+DatabaseConnection <|-- RoleRepository
+DatabaseConnection <|-- PermissionRepository
+DatabaseConnection <|-- LogRepository
+
+MenuItemRepository --> MenuItem
+MenuItemRepository --> LogService
+MenuItemRepository --> ImageUploader
+
+UserRepository --> User
+UserRepository --> PasswordHasher
+
+RoleRepository --> Role
+RoleRepository --> PermissionRepository
+
+PermissionRepository --> Permission
+
+LogRepository --> LogEntry
+
+MenuService --> MenuItemRepository
+MenuService --> ImageUploader
+MenuService --> LogService
+
+UserService --> UserRepository
+UserService --> RoleRepository
+
+RoleService --> RoleRepository
+RoleService --> PermissionRepository
+
+PermissionService --> PermissionRepository
+
+MenuStateUpdater --> MenuItemRepository
+MenuStateUpdater --> LogService
+
+SearchHandler --> MenuItemRepository
+
+SortHandler --> MenuItemRepository
+
+BulkStateUpdater --> MenuItemRepository
+BulkStateUpdater --> LogService
+
+ImageHandler --> MenuService
+
+@enduml

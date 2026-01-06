@@ -14,7 +14,7 @@ public class StringTools {
         return text.length();
     }
 
-    // Ví dụ dùng
+    // Ví dụ dùngtttttt
     public static void main(String[] args) {
         StringTools tool = new StringTools();
         String s = "hello world";

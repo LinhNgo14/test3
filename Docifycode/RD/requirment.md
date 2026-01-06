@@ -6,7 +6,7 @@ fffffff
 本プロジェクトはAIを使用して要件定義書を自動生成する仕組みを構築することを目的とします。
 
 ## 機能要件
-eeeerrrr
+eeeerrrrtyyyyyyyyyyyyyyyyhhhhhhhhhhhhh
 1. ユーザーはプロンプトを入力する。fffff
 2. システムはAIに要求を送信する。
 3. AIは要件定義文書を生成して返す。
